@@ -438,11 +438,15 @@ export class ComfyApp {
 						imagesChanged = true;
 						imgURLs = imgURLs.concat(
 							output.images.map((params) => {
-								return api.apiURL(
-									"/view?" +
-										new URLSearchParams(params).toString() +
-										(this.animatedImages ? "" : app.getPreviewFormatParam()) + app.getRandParam()
-								);
+								if("base64" in params){
+									return params.prefix + params.base64;
+								}else{
+									return api.apiURL(
+										"/view?" +
+											new URLSearchParams(params).toString() +
+											(this.animatedImages ? "" : app.getPreviewFormatParam()) + app.getRandParam()
+									);
+								}
 							})
 						);
 					}
@@ -1783,6 +1787,7 @@ export class ComfyApp {
 
 				output[String(node.id)] = {
 					inputs,
+					title: node.title,
 					class_type: node.comfyClass,
 				};
 			}

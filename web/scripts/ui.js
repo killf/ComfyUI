@@ -720,7 +720,9 @@ export class ComfyUI {
 						}
 					}
 					app.graphToPrompt().then(p=>{
-						const json = JSON.stringify(p.workflow, null, 2); // convert the data to a JSON string
+						let workflow = p.workflow;
+						workflow.prompt = p.output;
+						const json = JSON.stringify(workflow, null, 2); // convert the data to a JSON string
 						const blob = new Blob([json], {type: "application/json"});
 						const url = URL.createObjectURL(blob);
 						const a = $el("a", {
