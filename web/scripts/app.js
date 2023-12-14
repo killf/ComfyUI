@@ -1787,7 +1787,7 @@ export class ComfyApp {
 
 				output[String(node.id)] = {
 					inputs,
-					title: node.title,
+					title: node.title.trim(),
 					class_type: node.comfyClass,
 				};
 			}
