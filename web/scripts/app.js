@@ -1450,6 +1450,9 @@ export class ComfyApp {
 				this.size = s;
 				this.serialize_widgets = true;
 
+				if("color" in nodeData) this.color = nodeData.color;
+				if("bgcolor" in nodeData) this.bgcolor = nodeData.bgcolor;
+
 				app.#invokeExtensionsAsync("nodeCreated", this);
 			},
 			{

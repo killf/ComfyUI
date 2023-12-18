@@ -408,6 +408,13 @@ class PromptServer():
 
             if hasattr(obj_class, 'CATEGORY'):
                 info['category'] = obj_class.CATEGORY
+            
+            if hasattr(obj_class, 'COLOR'):
+                info['color'] = obj_class.COLOR
+
+            if hasattr(obj_class, 'BGCOLOR'):
+                info['bgcolor'] = obj_class.BGCOLOR
+
             return info
 
         @routes.get("/object_info")

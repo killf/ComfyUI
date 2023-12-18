@@ -13,6 +13,9 @@ class InputNode:
     FUNCTION = "handler"
     CATEGORY = "input"
 
+    COLOR = "#432"
+    BGCOLOR = "#653"
+
     def handler(self, value):
         return value,
 
@@ -73,6 +76,9 @@ class OutputNode:
     FUNCTION = "handler"
     OUTPUT_NODE = True
     CATEGORY = "output"
+
+    COLOR = "#223"
+    BGCOLOR = "#335"
 
     @classmethod
     def IS_CHANGED(s, images, **kwargs):
