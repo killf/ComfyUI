@@ -273,7 +273,13 @@ export const ComfyWidgets = {
 		let res;
 		if (multiline) {
 			res = addMultilineWidget(node, inputName, { defaultVal, ...inputData[1] }, app);
-		} else {
+		}
+		else if("values" in inputData[1]){
+			const values = inputData[1].values;
+			let defaultValue = values[0] || "";
+			res = { widget: node.addWidget("combo", inputName, defaultValue, () => {}, { values: values }) };
+		}
+		else {
 			res = { widget: node.addWidget("text", inputName, defaultVal, () => {}, {}) };
 		}
 

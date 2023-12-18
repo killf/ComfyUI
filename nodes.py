@@ -415,7 +415,7 @@ class LoadLatent:
     def INPUT_TYPES(s):
         input_dir = folder_paths.get_input_directory()
         files = [f for f in os.listdir(input_dir) if os.path.isfile(os.path.join(input_dir, f)) and f.endswith(".latent")]
-        return {"required": {"latent": [sorted(files), ]}, }
+        return {"required": {"latent": ["STRING", {"values":sorted(files)}]}, }
 
     CATEGORY = "_for_testing"
 
@@ -449,8 +449,8 @@ class LoadLatent:
 class CheckpointLoader:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": { "config_name": (folder_paths.get_filename_list("configs"), ),
-                              "ckpt_name": (folder_paths.get_filename_list("checkpoints"), )}}
+        return {"required": { "config_name": folder_paths.get_filename_list_param("configs"),
+                              "ckpt_name": folder_paths.get_filename_list_param("checkpoints")}}
     RETURN_TYPES = ("MODEL", "CLIP", "VAE")
     FUNCTION = "load_checkpoint"
 
@@ -464,8 +464,8 @@ class CheckpointLoader:
 class CheckpointLoaderSimple:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": { "ckpt_name": (folder_paths.get_filename_list("checkpoints"), ),
-                             }}
+        return {"required": { "ckpt_name": folder_paths.get_filename_list_param("checkpoints"), }}
+
     RETURN_TYPES = ("MODEL", "CLIP", "VAE")
     FUNCTION = "load_checkpoint"
 
@@ -486,7 +486,7 @@ class DiffusersLoader:
                     if "model_index.json" in files:
                         paths.append(os.path.relpath(root, start=search_path))
 
-        return {"required": {"model_path": (paths,), }}
+        return {"required": {"model_path": ("STRING", {"values":paths}), }}
     RETURN_TYPES = ("MODEL", "CLIP", "VAE")
     FUNCTION = "load_checkpoint"
 
@@ -506,7 +506,7 @@ class DiffusersLoader:
 class unCLIPCheckpointLoader:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": { "ckpt_name": (folder_paths.get_filename_list("checkpoints"), ),
+        return {"required": { "ckpt_name": folder_paths.get_filename_list_param("checkpoints"),
                              }}
     RETURN_TYPES = ("MODEL", "CLIP", "VAE", "CLIP_VISION")
     FUNCTION = "load_checkpoint"
@@ -542,7 +542,7 @@ class LoraLoader:
     def INPUT_TYPES(s):
         return {"required": { "model": ("MODEL",),
                               "clip": ("CLIP", ),
-                              "lora_name": (folder_paths.get_filename_list("loras"), ),
+                              "lora_name": folder_paths.get_filename_list_param("loras"),
                               "strength_model": ("FLOAT", {"default": 1.0, "min": -20.0, "max": 20.0, "step": 0.01}),
                               "strength_clip": ("FLOAT", {"default": 1.0, "min": -20.0, "max": 20.0, "step": 0.01}),
                               }}
@@ -576,7 +576,7 @@ class LoraLoaderModelOnly(LoraLoader):
     @classmethod
     def INPUT_TYPES(s):
         return {"required": { "model": ("MODEL",),
-                              "lora_name": (folder_paths.get_filename_list("loras"), ),
+                              "lora_name": folder_paths.get_filename_list_param("loras"),
                               "strength_model": ("FLOAT", {"default": 1.0, "min": -20.0, "max": 20.0, "step": 0.01}),
                               }}
     RETURN_TYPES = ("MODEL",)
@@ -634,7 +634,7 @@ class VAELoader:
 
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": { "vae_name": (s.vae_list(), )}}
+        return {"required": { "vae_name": ("STRING", {"values": s.vae_list()})}}
     RETURN_TYPES = ("VAE",)
     FUNCTION = "load_vae"
 
@@ -653,7 +653,7 @@ class VAELoader:
 class ControlNetLoader:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": { "control_net_name": (folder_paths.get_filename_list("controlnet"), )}}
+        return {"required": { "control_net_name": folder_paths.get_filename_list_param("controlnet")}}
 
     RETURN_TYPES = ("CONTROL_NET",)
     FUNCTION = "load_controlnet"
@@ -669,7 +669,7 @@ class DiffControlNetLoader:
     @classmethod
     def INPUT_TYPES(s):
         return {"required": { "model": ("MODEL",),
-                              "control_net_name": (folder_paths.get_filename_list("controlnet"), )}}
+                              "control_net_name": folder_paths.get_filename_list_param("controlnet")}}
 
     RETURN_TYPES = ("CONTROL_NET",)
     FUNCTION = "load_controlnet"
@@ -762,7 +762,7 @@ class ControlNetApplyAdvanced:
 class UNETLoader:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": { "unet_name": (folder_paths.get_filename_list("unet"), ),
+        return {"required": { "unet_name": folder_paths.get_filename_list_param("unet"),
                              }}
     RETURN_TYPES = ("MODEL",)
     FUNCTION = "load_unet"
@@ -777,7 +777,7 @@ class UNETLoader:
 class CLIPLoader:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": { "clip_name": (folder_paths.get_filename_list("clip"), ),
+        return {"required": { "clip_name": folder_paths.get_filename_list_param("clip"),
                              }}
     RETURN_TYPES = ("CLIP",)
     FUNCTION = "load_clip"
@@ -792,7 +792,7 @@ class CLIPLoader:
 class DualCLIPLoader:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": { "clip_name1": (folder_paths.get_filename_list("clip"), ), "clip_name2": (folder_paths.get_filename_list("clip"), ),
+        return {"required": { "clip_name1": folder_paths.get_filename_list_param("clip"), "clip_name2": folder_paths.get_filename_list_param("clip"),
                              }}
     RETURN_TYPES = ("CLIP",)
     FUNCTION = "load_clip"
@@ -808,7 +808,7 @@ class DualCLIPLoader:
 class CLIPVisionLoader:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": { "clip_name": (folder_paths.get_filename_list("clip_vision"), ),
+        return {"required": { "clip_name": folder_paths.get_filename_list_param("clip_vision"),
                              }}
     RETURN_TYPES = ("CLIP_VISION",)
     FUNCTION = "load_clip"
@@ -838,7 +838,7 @@ class CLIPVisionEncode:
 class StyleModelLoader:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": { "style_model_name": (folder_paths.get_filename_list("style_models"), )}}
+        return {"required": { "style_model_name": folder_paths.get_filename_list_param("style_models")}}
 
     RETURN_TYPES = ("STYLE_MODEL",)
     FUNCTION = "load_style_model"
@@ -903,7 +903,7 @@ class unCLIPConditioning:
 class GLIGENLoader:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": { "gligen_name": (folder_paths.get_filename_list("gligen"), )}}
+        return {"required": { "gligen_name": folder_paths.get_filename_list_param("gligen")}}
 
     RETURN_TYPES = ("GLIGEN",)
     FUNCTION = "load_gligen"

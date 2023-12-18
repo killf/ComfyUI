@@ -8,7 +8,7 @@ import folder_paths
 class ImageOnlyCheckpointLoader:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": { "ckpt_name": (folder_paths.get_filename_list("checkpoints"), ),
+        return {"required": { "ckpt_name": folder_paths.get_filename_list_param("checkpoints"),
                              }}
     RETURN_TYPES = ("MODEL", "CLIP_VISION", "VAE")
     FUNCTION = "load_checkpoint"

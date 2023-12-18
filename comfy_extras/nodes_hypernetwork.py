@@ -97,7 +97,7 @@ class HypernetworkLoader:
     @classmethod
     def INPUT_TYPES(s):
         return {"required": { "model": ("MODEL",),
-                              "hypernetwork_name": (folder_paths.get_filename_list("hypernetworks"), ),
+                              "hypernetwork_name": folder_paths.get_filename_list_param("hypernetworks"),
                               "strength": ("FLOAT", {"default": 1.0, "min": -10.0, "max": 10.0, "step": 0.01}),
                               }}
     RETURN_TYPES = ("MODEL",)

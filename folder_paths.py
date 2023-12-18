@@ -154,6 +154,9 @@ def filter_files_extensions(files, extensions):
 
 
 def get_full_path(folder_name, filename):
+    if os.path.isabs(filename):
+        return filename
+
     global folder_names_and_paths
     if folder_name not in folder_names_and_paths:
         return None
@@ -199,6 +202,9 @@ def cached_filename_list_(folder_name):
                 return None
 
     return out
+
+def get_filename_list_param(folder_name):
+    return "STRING", {"values": get_filename_list(folder_name)}
 
 def get_filename_list(folder_name):
     out = cached_filename_list_(folder_name)

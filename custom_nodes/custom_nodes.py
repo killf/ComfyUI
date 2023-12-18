@@ -21,7 +21,7 @@ class InputString(InputNode):
 
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": {"value": ("STRING", {"default": "value"})}}
+        return {"required": {"value": ("STRING", {"default": ""})}}
 
 class InputText(InputNode):
     RETURN_TYPES = ("STRING",)
