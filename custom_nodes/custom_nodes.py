@@ -1,11 +1,13 @@
 from PIL import Image
 import numpy as np
+import requests
 import hashlib
 import base64
 import torch
 import time
 import cv2
 import os
+import io
 
 import folder_paths
 
@@ -57,19 +59,49 @@ class InputImage(InputNode):
         return {"required": {"image": (sorted(files), {"image_upload": True})}}
 
     def handler(self, image):
-        image_path = folder_paths.get_annotated_filepath(image)
-        image = Image.open(image_path).convert("RGB")
+        if isinstance(image, str):
+            if image.startswith("http://") or image.startswith("https://"):
+                image = requests.get(image).content
+                image = Image.open(io.BytesIO(image)).convert("RGB")
+            else:                
+                image_path = image if os.path.isabs(image) else folder_paths.get_annotated_filepath(image)
+                image = Image.open(image_path).convert("RGB")
+        elif isinstance(image, bytes):
+            image = Image.open(io.BytesIO(image)).convert("RGB")
+        else:
+            raise Example("The source of image doest not support.")
+
         image = np.array(image).astype(np.float32) / 255.0
         image = torch.from_numpy(image)[None,]
         return image,
     
     @classmethod
     def IS_CHANGED(s, image):
-        image_path = folder_paths.get_annotated_filepath(image)
+        if isinstance(image, str):
+            if image.startswith("http://") or image.startswith("https://"):
+                return image
+            else:
+                image_path = image if os.path.isabs(image) else folder_paths.get_annotated_filepath(image)
+                image = open(image_path, 'rb').read()
+        elif isinstance(image, bytes):
+            pass
+        else:
+            return False
+
         m = hashlib.sha256()
-        with open(image_path, 'rb') as f:
-            m.update(f.read())
+        m.update(image)
         return m.digest().hex()
+    
+    @classmethod
+    def VALIDATE_INPUTS(s, image):
+        if isinstance(image, str):
+            if image.startswith("http://") or image.startswith("https://"):
+                return True
+            else:
+                if not os.path.isabs(image):
+                    if not folder_paths.exists_annotated_filepath(image):
+                        return "Invalid image file: {}".format(image)
+        return True
 
 class OutputNode:
     RETURN_TYPES = ()
