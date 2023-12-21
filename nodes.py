@@ -471,9 +471,19 @@ class CheckpointLoaderSimple:
 
     CATEGORY = "loaders"
 
+    last_inputs = None
+    last_output = None
+
     def load_checkpoint(self, ckpt_name, output_vae=True, output_clip=True):
+        if self.last_inputs == (ckpt_name, output_vae, output_clip):
+            return self.last_output
+
         ckpt_path = folder_paths.get_full_path("checkpoints", ckpt_name)
         out = comfy.sd.load_checkpoint_guess_config(ckpt_path, output_vae=True, output_clip=True, embedding_directory=folder_paths.get_folder_paths("embeddings"))
+        
+        self.last_inputs = (ckpt_name, output_vae, output_clip)
+        self.last_output = out[:3]
+        
         return out[:3]
 
 class DiffusersLoader:
@@ -551,7 +561,13 @@ class LoraLoader:
 
     CATEGORY = "loaders"
 
+    last_inputs = None
+    last_output = None
+
     def load_lora(self, model, clip, lora_name, strength_model, strength_clip):
+        if self.last_inputs == (model, clip, lora_name, strength_model, strength_clip):
+            return self.last_output
+
         if strength_model == 0 and strength_clip == 0:
             return (model, clip)
 
@@ -570,6 +586,10 @@ class LoraLoader:
             self.loaded_lora = (lora_path, lora)
 
         model_lora, clip_lora = comfy.sd.load_lora_for_models(model, clip, lora, strength_model, strength_clip)
+
+        self.last_inputs = (model, clip, lora_name, strength_model, strength_clip)
+        self.last_output = (model_lora, clip_lora)
+
         return (model_lora, clip_lora)
 
 class LoraLoaderModelOnly(LoraLoader):
