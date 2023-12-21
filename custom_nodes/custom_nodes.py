@@ -129,7 +129,10 @@ class InputLoRA(InputNode):
             
             resp = resp.json()
             baseModel, loRAModel = resp['BaseModel'], value
-        return f"/mnt/cpfs_sd/base_models/{baseModel}.safetensors", f"/mnt/cpfs_sd/lora/{loRAModel}.safetensors"
+        
+        baseModel = baseModel if os.path.isabs(baseModel) else f"/mnt/cpfs_sd/base_models/{baseModel}.safetensors"
+        loRAModel = loRAModel if os.path.isabs(loRAModel) else f"/mnt/cpfs_sd/lora/{loRAModel}.safetensors"
+        return baseModel, loRAModel
 
 class OutputNode:
     RETURN_TYPES = ()
