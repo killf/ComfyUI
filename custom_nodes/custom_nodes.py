@@ -1,4 +1,4 @@
-from PIL import Image
+from PIL import Image, ImageOps
 import numpy as np
 import requests
 import hashlib
@@ -50,7 +50,7 @@ class InputFloat(InputNode):
         return {"required": {"value": ("FLOAT", {"default": 0.0})}}
 
 class InputImage(InputNode):
-    RETURN_TYPES = ("IMAGE",)
+    RETURN_TYPES = ("IMAGE", "MASK")
 
     @classmethod
     def INPUT_TYPES(s):
@@ -62,18 +62,25 @@ class InputImage(InputNode):
         if isinstance(image, str):
             if image.startswith("http://") or image.startswith("https://"):
                 image = requests.get(image).content
-                image = Image.open(io.BytesIO(image)).convert("RGB")
+                image = Image.open(io.BytesIO(image))
             else:                
                 image_path = image if os.path.isabs(image) else folder_paths.get_annotated_filepath(image)
-                image = Image.open(image_path).convert("RGB")
+                image = Image.open(image_path)
         elif isinstance(image, bytes):
-            image = Image.open(io.BytesIO(image)).convert("RGB")
+            image = Image.open(io.BytesIO(image))
         else:
             raise Example("The source of image doest not support.")
-
+        
+        i = ImageOps.exif_transpose(image)
+        image = i.convert("RGB")
         image = np.array(image).astype(np.float32) / 255.0
         image = torch.from_numpy(image)[None,]
-        return image,
+        if 'A' in i.getbands():
+            mask = np.array(i.getchannel('A')).astype(np.float32) / 255.0
+            mask = 1. - torch.from_numpy(mask)
+        else:
+            mask = torch.zeros((64,64), dtype=torch.float32, device="cpu")
+        return (image, mask.unsqueeze(0))
     
     @classmethod
     def IS_CHANGED(s, image):
@@ -113,7 +120,7 @@ class InputLoRA(InputNode):
 
     def handler(self, value):
         if "@" in value:
-            baseModel, loRAModel = value.split("@")
+            loRAModel, baseModel = value.split("@")
         else:
             server = os.environ.get("ONESHOTPIPE_URL", "https://int-enterlive-oneshotpipe.xiaoice.com").rstrip("/")
             resp = requests.get(f"{server}/Image2Image/lora?LoRAId={value}")
