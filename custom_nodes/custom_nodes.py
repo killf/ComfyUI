@@ -103,6 +103,27 @@ class InputImage(InputNode):
                         return "Invalid image file: {}".format(image)
         return True
 
+class InputLoRA(InputNode):
+    RETURN_TYPES = ("STRING", "STRING")
+    RETURN_NAMES = ("Base Model", "LoRA Model")
+
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required": {"value": ("STRING", {"default": ""})}}
+
+    def handler(self, value):
+        if "@" in value:
+            baseModel, loRAModel = value.split("@")
+        else:
+            server = os.environ.get("ONESHOTPIPE_URL", "https://int-enterlive-oneshotpipe.xiaoice.com").rstrip("/")
+            resp = requests.get(f"{server}/Image2Image/lora?LoRAId={value}")
+            if resp.status_code != 200:
+                raise Exception(f"The LoRA is invalid: {value}")
+            
+            resp = resp.json()
+            baseModel, loRAModel = resp['BaseModel'], value
+        return f"/mnt/cpfs_sd/base_models/{baseModel}.safetensors", f"/mnt/cpfs_sd/lora/{loRAModel}.safetensors"
+
 class OutputNode:
     RETURN_TYPES = ()
     FUNCTION = "handler"
@@ -143,6 +164,7 @@ NODE_CLASS_MAPPINGS = {
     "InputString": InputString,
     "InputText": InputText,
     "InputImage": InputImage,
+    "InputLoRA": InputLoRA,
 
     "OutputImage": OutputImage
 }
@@ -154,6 +176,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "InputString": "Input String",
     "InputText": "Input Text",
     "InputImage": "Input Image",
+    "InputLoRA": "Input LoRA",
 
     "OutputImage": "Output Image"
 }
