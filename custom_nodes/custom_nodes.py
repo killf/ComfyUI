@@ -59,17 +59,16 @@ class InputImage(InputNode):
         return {"required": {"image": (sorted(files), {"image_upload": True})}}
 
     def handler(self, image):
-        if isinstance(image, str):
-            if image.startswith("http://") or image.startswith("https://"):
-                image = requests.get(image).content
-                image = Image.open(io.BytesIO(image))
-            else:                
-                image_path = image if os.path.isabs(image) else folder_paths.get_annotated_filepath(image)
-                image = Image.open(image_path)
-        elif isinstance(image, bytes):
+        if image.startswith("http://") or image.startswith("https://"):
+            image = requests.get(image).content
+            image = Image.open(io.BytesIO(image))
+        elif image.startswith("base64://"):
+            image = image[len("base64://"):]
+            image = base64.b64decode(image)
             image = Image.open(io.BytesIO(image))
         else:
-            raise Example("The source of image doest not support.")
+            image_path = image if os.path.isabs(image) else folder_paths.get_annotated_filepath(image)
+            image = Image.open(image_path)
         
         i = ImageOps.exif_transpose(image)
         image = i.convert("RGB")
@@ -84,16 +83,13 @@ class InputImage(InputNode):
     
     @classmethod
     def IS_CHANGED(s, image):
-        if isinstance(image, str):
-            if image.startswith("http://") or image.startswith("https://"):
-                return image
-            else:
-                image_path = image if os.path.isabs(image) else folder_paths.get_annotated_filepath(image)
-                image = open(image_path, 'rb').read()
-        elif isinstance(image, bytes):
-            pass
+        if image.startswith("http://") or image.startswith("https://"):
+            return image
+        elif image.startswith("base64://"):
+            return image
         else:
-            return False
+            image_path = image if os.path.isabs(image) else folder_paths.get_annotated_filepath(image)
+            image = open(image_path, 'rb').read()
 
         m = hashlib.sha256()
         m.update(image)
@@ -103,6 +99,8 @@ class InputImage(InputNode):
     def VALIDATE_INPUTS(s, image):
         if isinstance(image, str):
             if image.startswith("http://") or image.startswith("https://"):
+                return True
+            elif image.startswith("base64://"):
                 return True
             else:
                 if not os.path.isabs(image):
