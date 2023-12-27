@@ -1,4 +1,5 @@
 from PIL import Image, ImageOps
+from tritonclient import grpc
 import numpy as np
 import requests
 import hashlib
@@ -164,6 +165,32 @@ class OutputImage(OutputNode):
             })
         return { "ui": { "images": results } }
 
+
+class GPEN:
+    FUNCTION = "handler"
+    CATEGORY = "triton"
+
+    RETURN_TYPES = ("IMAGE",)
+
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required": {"image": ("IMAGE", )}}
+
+    def handler(self, image):
+        img = (image[0] * 255).clip(0, 255).type(torch.uint8).cpu().numpy()
+        
+        triton_server_url = os.environ.get("TRITON_SERVER_URL", "sd-pipeline-preprocess-1-predictor-default.model-serving.knative-wd.xiaoice.com:8080")
+        with grpc.InferenceServerClient(triton_server_url) as client:
+            img_tensor = grpc.InferInput("input", list(img.shape), "UINT8")
+            img_tensor.set_data_from_numpy(img)
+
+            results = client.infer(model_name="sd_GPEN", inputs=[img_tensor])
+            sr_img = results.as_numpy("output")
+
+        sr_img = sr_img.astype(np.float32) / 255.0
+        return torch.from_numpy(sr_img)[None,], 
+
+
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
 NODE_CLASS_MAPPINGS = {
@@ -174,7 +201,9 @@ NODE_CLASS_MAPPINGS = {
     "InputImage": InputImage,
     "InputLoRA": InputLoRA,
 
-    "OutputImage": OutputImage
+    "OutputImage": OutputImage,
+
+    "GPEN": GPEN,
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -186,5 +215,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "InputImage": "Input Image",
     "InputLoRA": "Input LoRA",
 
-    "OutputImage": "Output Image"
+    "OutputImage": "Output Image",
+
+    "GPEN": "GPEN(X2)",
 }
