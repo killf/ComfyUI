@@ -722,6 +722,7 @@ export class ComfyUI {
 					app.graphToPrompt().then(p=>{
 						let workflow = p.workflow;
 						workflow.prompt = p.output;
+						api.get_widget_idxs(workflow);
 						const json = JSON.stringify(workflow, null, 2); // convert the data to a JSON string
 						const blob = new Blob([json], {type: "application/json"});
 						const url = URL.createObjectURL(blob);
