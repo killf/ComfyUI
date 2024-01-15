@@ -16,3 +16,9 @@
 [submodule "custom_nodes/ComfyUI-WD14-Tagger"]
 	path = custom_nodes/ComfyUI-WD14-Tagger
 	url = https://github.com/pythongosssss/ComfyUI-WD14-Tagger
+[submodule "custom_nodes/ComfyLibs"]
+	path = custom_nodes/ComfyLibs
+	url = git@ssh.dev.azure.com:v3/xiaobingai/Vision/ComfyLibs
+[submodule "custom_nodes/ComfyUI_UltimateSDUpscale"]
+	path = custom_nodes/ComfyUI_UltimateSDUpscale
+	url = https://github.com/ssitu/ComfyUI_UltimateSDUpscale
